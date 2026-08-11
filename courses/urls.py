@@ -33,3 +33,6 @@ urlpatterns = [
     path('lesson-update-delete/<uuid:pk>', LessonUpDelAPIView.as_view()),
     path('lesson-detail/<uuid:pk>', LessonDetailAPIView.as_view()),
 ]
+
+def starts():
+    pass
