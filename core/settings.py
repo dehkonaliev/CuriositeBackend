@@ -182,7 +182,7 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('APP_PASSWORD')
 
 # Default sender address
-DEFAULT_FROM_EMAIL = 'Webmaster <your-email@example.com>'
+DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'you@gmail.com')
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
