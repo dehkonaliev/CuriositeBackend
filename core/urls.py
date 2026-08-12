@@ -18,6 +18,21 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+import os
+from django.http import JsonResponse
+
+
+def _media_debug(request):
+    files = []
+    for root, _dirs, names in os.walk(settings.MEDIA_ROOT):
+        for n in names:
+            files.append(os.path.relpath(os.path.join(root, n), settings.MEDIA_ROOT))
+    return JsonResponse({
+        "MEDIA_ROOT": str(settings.MEDIA_ROOT),
+        "total_files": len(files),
+        "files": sorted(files)[:50],
+        "78806700_exists": os.path.exists(os.path.join(settings.MEDIA_ROOT, "users", "78806700.jpg")),
+    })
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,6 +46,7 @@ urlpatterns = [
     path('api/notifications/', include('notifications.urls')),
     path('api/certificates/', include('certificates.urls')),
     path('api/leaderboard/', include('leaders.urls')),
+    path('__media_debug__', _media_debug),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
