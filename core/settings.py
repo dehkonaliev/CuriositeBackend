@@ -101,9 +101,9 @@ INSTALLED_APPS += ['storages']
 
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-AWS_S3_BUCKET_NAME = os.environ.get('AWS_S3_BUCKET_NAME')
-AWS_ENDPOINT_URL = os.environ.get('AWS_ENDPOINT_URL')  # e.g. https://xxxx.railway.app
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_S3_BUCKET_NAME')
+AWS_S3_ENDPOINT_URL = os.environ.get('AWS_ENDPOINT_URL')  # e.g. https://xxxx.railway.app
+AWS_S3_REGION_NAME = os.environ.get('AWS_DEFAULT_REGION', 'auto')
 
 
 AWS_S3_ADDRESSING_STYLE = 'path'  # important for most S3-compatible providers
