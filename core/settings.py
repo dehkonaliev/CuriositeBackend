@@ -97,14 +97,33 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+INSTALLED_APPS += ['storages']
+
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_S3_BUCKET_NAME = os.environ.get('AWS_S3_BUCKET_NAME')
+AWS_ENDPOINT_URL = os.environ.get('AWS_ENDPOINT_URL')  # e.g. https://xxxx.railway.app
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+
+
+AWS_S3_ADDRESSING_STYLE = 'path'  # important for most S3-compatible providers
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None  # let bucket policy control access instead of per-object ACLs
+AWS_QUERYSTRING_AUTH = True  # set False if you want plain public URLs, True for signed/private URLs
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+
+# Django 4.2+ new STORAGES API (use this if on 4.2+)
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "storages.backends.s3.S3Storage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+
+# If Django < 4.2, use the old-style setting instead of STORAGES:
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 ROOT_URLCONF = 'core.urls'
 
