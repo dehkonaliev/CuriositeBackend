@@ -17,7 +17,26 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG') == 'True'
 
-ALLOWED_HOSTS = ['www.curiosite.uz', 'curiosite.uz', 'localhost', '127.0.0.1:8000']
+ALLOWED_HOSTS = [
+    'www.curiosite.uz',
+    'curiosite.uz',
+    'curiositebackend-production.up.railway.app',
+    'localhost',
+    '127.0.0.1',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'https://www.curiosite.uz',
+    'https://curiosite.uz',
+    'https://curiositebackend-production.up.railway.app',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://www.curiosite.uz',
+    'https://curiosite.uz',
+    'https://curiositebackend-production.up.railway.app',
+    'http://127.0.0.1:8000',
+]
 
 
 INSTALLED_APPS = [
@@ -46,8 +65,6 @@ INSTALLED_APPS = [
     'certificates'
 ]
 
-CORS_ALLOW_ALL_ORIGINS = ['www.curiosite.uz', 'curiosite.uz', 'https://curiositebackend-production.up.railway.app']
-CSRF_TRUSTED_ORIGINS = ["https://curiositebackend-production.up.railway.app", 'http://127.0.0.1:8000']
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
