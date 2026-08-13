@@ -26,14 +26,14 @@ ALLOWED_HOSTS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'https://www.curiosite.uz',
-    'https://curiosite.uz',
+    'http://www.curiosite.uz',
+    'http://curiosite.uz',
     'https://curiositebackend-production.up.railway.app',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://www.curiosite.uz',
-    'https://curiosite.uz',
+    'http://www.curiosite.uz',
+    'http://curiosite.uz',
     'https://curiositebackend-production.up.railway.app',
     'http://127.0.0.1:8000',
 ]
