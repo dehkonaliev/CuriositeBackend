@@ -1,1 +1,1 @@
-python manage.py repair_migrations && python manage.py migrate && web: gunicorn core.wsgi --bind 0.0.0.0:$PORT --log-file -
+python manage.py repair_migrations && python manage.py migrate && gunicorn core.wsgi --bind 0.0.0.0:8080 --access-logfile - --error-logfile -
