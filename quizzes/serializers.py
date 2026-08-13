@@ -69,7 +69,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             return field_error("quiz", "Quiz must be set")
         user = self.context.get('request').user
         if quiz.lesson.module.course.instructor != user:
-            return field_error("quiz", "You cannot create a question for this quiz")        
+            return field_error("quiz", "You cannot create a question for this quiz.")        
         
         return quiz
     
