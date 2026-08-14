@@ -97,7 +97,18 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-INSTALLED_APPS += ['storages']
+if DEBUG:
+    INSTALLED_APPS += ['storages']
+    
+    # Django 4.2+ new STORAGES API (use this if on 4.2+)
+    STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+    }
 
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
@@ -112,15 +123,8 @@ AWS_DEFAULT_ACL = None  # let bucket policy control access instead of per-object
 AWS_QUERYSTRING_AUTH = True  # set False if you want plain public URLs, True for signed/private URLs
 AWS_S3_SIGNATURE_VERSION = 's3v4'
 
-# Django 4.2+ new STORAGES API (use this if on 4.2+)
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3.S3Storage",
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
-}
+
+
 
 LOGGING = {
     'version': 1,
@@ -231,20 +235,7 @@ PHONE_EXPIRATION_TIME = 100
 # Where password-reset links in emails point (the frontend app).
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-EMAIL_HOST = 'smtp.gmail.com'          # Change to your provider's SMTP host
-EMAIL_PORT = 587                       # 587 for TLS, 465 for SSL
-EMAIL_USE_TLS = True                   # Use True for TLS
-EMAIL_USE_SSL = False                  # Use True if using port 465 instead
-
-# Authentication credentials
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER') 
-EMAIL_HOST_PASSWORD = os.environ.get('APP_PASSWORD')
-
-# Default sender address
-DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'you@gmail.com')
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / '/media/'
@@ -259,5 +250,3 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
-
-

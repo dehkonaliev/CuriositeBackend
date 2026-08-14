@@ -1,39 +1,46 @@
-from django.core.mail import EmailMultiAlternatives
+import resend
+from core.settings import RESEND_API_KEY
 from django.template.loader import render_to_string
-from django.utils.html import strip_tags
+from jinja2 import Template
+
+resend.api_key = RESEND_API_KEY
+
 
 def send_verification_code(user_email, code):
-    subject = "Your verification code!"
-    
-    html_content = render_to_string('emails/verification_code.html', {'code': code})
-    
-    text_content = strip_tags(html_content) 
+    html_content = render_to_string("emails/verification_code.html", {
+        "user_email": user_email,
+        "code": code,
+    })
 
-    msg = EmailMultiAlternatives(subject, text_content, None, [user_email])
-    
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
+    params: resend.Emails.SendParams = {
+        "from": "Curiosite <noreply@curiosite.uz>",
+        "to": [user_email],
+        "subject": "Verification code",
+        "html": html_content
+    }
+
+    email = resend.Emails.send(params)
+    print(email)
     
 def send_password_reset_link(user_email, link):
-    subject = "Your password reset link!"
-    
-    html_content = render_to_string('emails/password_reset.html', {'link': link})
-    
-    text_content = strip_tags(html_content) 
+    params: resend.Emails.SendParams = {
+    "from": "Curiosite",
+    "to": [user_email],
+    "subject": link,
+    "html": "<p>it works!</p>"
+    }
 
-    msg = EmailMultiAlternatives(subject, text_content, None, [user_email])
+    email = resend.Emails.send(params)
+    print(email)
     
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
     
 def send_notification(user_email, message, data=None):
-    subject = message
-    
-    html_content = render_to_string('emails/notification.html', {'data': data})
-    
-    text_content = strip_tags(html_content) 
+    params: resend.Emails.SendParams = {
+    "from": "Curiosite",
+    "to": [user_email],
+    "subject": message,
+    "html": "<p>it works!</p>"
+    }
 
-    msg = EmailMultiAlternatives(subject, text_content, None, [user_email])
-    
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
+    email = resend.Emails.send(params)
+    print(email)
