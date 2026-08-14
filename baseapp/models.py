@@ -21,9 +21,10 @@ class MyToken(BaseModel):
     token = models.CharField(max_length=64, unique=True, default=secrets.token_urlsafe(32))
     is_used = models.BooleanField(default=False)
     token_for = models.CharField(max_length=20, choices=TokenFor.choices)
+    expire_time = models.DateTimeField(null=True, blank=True)
     
     
-    def is_valid(self):
-        expire_time = self.created_at + timedelta(hours=1)
-        return not self.is_used and timezone.now() < expire_time
+    def save(self, *args, **kwargs):
+        self.expire_time = timezone.now() + timedelta(minutes=100)
+        return super().save()
     

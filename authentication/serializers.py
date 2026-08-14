@@ -16,6 +16,7 @@ from .validators import name_validator, username_validator, password_validator
 from .utils import (check_email_username_phone, check_code, generate_mytoken, is_expired_code,
     base_updater,
 )
+from django.utils import timezone
 
 
 
@@ -98,8 +99,9 @@ class VerifyCodeSerializer(serializers.Serializer):
             return field_error("email_or_phone", "User not found")
         
         verification = check_code(user, code)
-        
-        token = generate_mytoken(user, 'ACTIVATION')
+        token = MyToken.objects.filter(user=user, is_used=False, expire_time__gt=timezone.now()).first()
+        if not token:
+            token = generate_mytoken(user, 'ACTIVATION')
         
         attrs['token'] = token.token
         attrs['verification'] = verification
