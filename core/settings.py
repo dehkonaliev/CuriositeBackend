@@ -97,7 +97,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if DEBUG:
+if not DEBUG:
     INSTALLED_APPS += ['storages']
     
     # Django 4.2+ new STORAGES API (use this if on 4.2+)
