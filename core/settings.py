@@ -20,7 +20,7 @@ DEBUG = os.environ.get('DEBUG') == 'True'
 ALLOWED_HOSTS = [
     'www.curiosite.uz',
     'curiosite.uz',
-    'curiositebackend-production.up.railway.app',
+    'curiosite.up.railway.app',
     'localhost',
     '127.0.0.1',
 ]
