@@ -1,7 +1,6 @@
 import resend
 from core.settings import RESEND_API_KEY
 from django.template.loader import render_to_string
-from jinja2 import Template
 
 resend.api_key = RESEND_API_KEY
 
