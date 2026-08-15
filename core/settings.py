@@ -63,7 +63,8 @@ INSTALLED_APPS = [
     'reviews',
     'notifications',
     'corsheaders',
-    'certificates'
+    'certificates',
+    'posts',
 ]
 
 
@@ -103,12 +104,12 @@ if not DEBUG:
     
     # Django 4.2+ new STORAGES API (use this if on 4.2+)
     STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3.S3Storage",
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
     }
 
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
@@ -152,9 +153,6 @@ LOGGING = {
         },
     },
 }
-
-# If Django < 4.2, use the old-style setting instead of STORAGES:
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 ROOT_URLCONF = 'core.urls'
 
