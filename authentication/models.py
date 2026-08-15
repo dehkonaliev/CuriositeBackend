@@ -125,3 +125,7 @@ class MyToken(BaseModel):
         self.expire_time = timezone.now() + timedelta(minutes=100)
         return super().save()
     
+    def is_valid(self):
+        expire_time = self.created_at + timedelta(hours=1)
+        return not self.is_used and timezone.now() < expire_time
+    
