@@ -7,6 +7,32 @@ from django.utils import timezone
 from core import settings
 from django.core.validators import FileExtensionValidator
 import secrets
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import ContentFile
+
+def make_square_thumbnail(image_field, size=300):
+    img = Image.open(image_field)
+
+    # Convert to RGB (handles PNGs with transparency, CMYK, etc.)
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+
+    # Center-crop to a square using the shorter side
+    width, height = img.size
+    min_side = min(width, height)
+    left = (width - min_side) // 2
+    top = (height - min_side) // 2
+    img = img.crop((left, top, left + min_side, top + min_side))
+
+    # Resize to target size
+    img = img.resize((size, size), Image.LANCZOS)
+
+    buffer = BytesIO()
+    img.save(buffer, format="JPEG", quality=85, optimize=True)
+    buffer.seek(0)
+
+    return ContentFile(buffer.read())
 
 
 class CustomUser(AbstractUser, BaseModel):
@@ -45,6 +71,7 @@ class CustomUser(AbstractUser, BaseModel):
     photo = models.ImageField(upload_to='users/', blank=True, null=True, validators=[
         FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp'])
     ])
+    thumbnail = models.ImageField(upload_to='user_thumbnails/', blank=True, null=True)
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -53,14 +80,36 @@ class CustomUser(AbstractUser, BaseModel):
     @property
     def is_verified(self):
         return self.email_verified or self.phone_verified
-    
-    def save(self, *args, **kwargs):            
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._original_photo = self.photo.name if self.photo else None
+        
+    def save(self, *args, **kwargs):
+        avatar_changed = self.photo and self.photo.name != self._original_photo
         if not self.pk and not self.password:
             self.set_unusable_password()
             
         if not self.username:
             self.username = f"user_{uuid.uuid4().hex[:12]}"
+            
+        # PHOTO PART
+        if avatar_changed:
+            thumb_content = make_square_thumbnail(self.photo, size=300)
+            if self.thumbnail:
+                self.thumbnail.delete(save=False)
+            self.thumbnail.save(
+                f"thumb_{self.photo.name.split('/')[-1]}",
+                thumb_content,
+                save=False
+            )
+        elif self.photo is None or self.photo.name is None:
+            if self.thumbnail:
+                self.thumbnail.delete(save=False)
+                self.thumbnail = None
+
         super().save(*args, **kwargs)
+        self._original_photo = self.photo.name if self.photo else None
         
         
 class CodeVerify(BaseModel):
@@ -108,14 +157,16 @@ class UserPreference(BaseModel):
     def __str__(self):
         return self.user.username or self.user.email
     
-    
+def generate_token():
+    return secrets.token_urlsafe(32)
+
 class MyToken(BaseModel):
     class TokenFor(models.TextChoices):
         ACTIVATION = 'ACTIVATION', 'activation'
         RESET_PASSWORD = 'RESET_PASSWORD', 'reset_password'
     
     user = models.ForeignKey('authentication.CustomUser', on_delete=models.CASCADE, related_name='my_tokens')
-    token = models.CharField(max_length=64, unique=True, default=secrets.token_urlsafe(32))
+    token = models.CharField(max_length=64, unique=True, default=generate_token)
     is_used = models.BooleanField(default=False)
     token_for = models.CharField(max_length=20, choices=TokenFor.choices)
     expire_time = models.DateTimeField(null=True, blank=True)
@@ -128,4 +179,6 @@ class MyToken(BaseModel):
     def is_valid(self):
         expire_time = self.created_at + timedelta(hours=1)
         return not self.is_used and timezone.now() < expire_time
+    
+    
     

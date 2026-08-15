@@ -7,6 +7,7 @@ from .models import MyToken
 import uuid
 from baseapp.utils import field_error
 
+
 def generate_code(user, verify_type):
     code = str(random.randint(100000, 999999))
     if verify_type=='VIA_EMAIL':

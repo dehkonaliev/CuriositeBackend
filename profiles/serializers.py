@@ -89,14 +89,14 @@ class GetStudentProfileSerializer(serializers.ModelSerializer):
     student_profile = StudentProfileSerializer()
     class Meta:
         model = CustomUser
-        fields = ['id', 'first_name', 'last_name', 'email', 'username', 'phone_number', 'photo', 'user_role', 'student_profile']
+        fields = ['id', 'first_name', 'last_name', 'email', 'username', 'phone_number', 'photo', 'thumbnail', 'user_role', 'student_profile']
         
 
 class GetInstructorProfileSerializer(serializers.ModelSerializer):
     instructor_profile = InstructorProfileSerializer()
     class Meta:
         model = CustomUser
-        fields = ['id', 'first_name', 'last_name', 'email', 'username', 'phone_number', 'photo', 'user_role', 'instructor_profile']
+        fields = ['id', 'first_name', 'last_name', 'email', 'username', 'phone_number', 'photo', 'thumbnail', 'user_role', 'instructor_profile']
               
 
 class SendFriendRequestSerializer(serializers.ModelSerializer):

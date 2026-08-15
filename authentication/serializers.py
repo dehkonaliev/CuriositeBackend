@@ -37,7 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            'id', 'email', 'phone_number', 'username', 'photo', 'first_name', 'last_name',
+            'id', 'email', 'phone_number', 'username', 'photo', 'thumbnail', 'first_name', 'last_name',
             'user_role', 'auth_type', 'account_status',
             'email_verified', 'phone_verified', 'photo',
             'user_preference',
@@ -249,8 +249,8 @@ class LogoutSerializer(serializers.Serializer):
 class UpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'first_name', 'last_name', 'username', 'photo']
-        read_only_fields = ['id']
+        fields = ['id', 'first_name', 'last_name', 'username', 'photo', 'thumbnail']
+        read_only_fields = ['id', 'thumbnail']
         
     NAME_REGEX = re.compile(r'^[A-Za-z\u00C0-\u017F\s\'-]+$')
     
@@ -271,6 +271,8 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         allowed_types = ['image/jpeg', 'image/png', 'image/webp']
         if value.content_type not in allowed_types:
             return field_error("photo", "Only JPEG, PNG, or WEBP images are allowed.")
+        
+        
 
         return value
     

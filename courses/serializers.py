@@ -304,7 +304,7 @@ class ModuleMinimalSerializer(serializers.ModelSerializer):
 class InstructorMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'photo']
+        fields = ['id', 'first_name', 'last_name', 'thumbnail']
         read_only_fields = fields
 
 class CourseDetailSerializer(serializers.ModelSerializer):
@@ -414,7 +414,7 @@ class CourseInfoSerializer(serializers.ModelSerializer):
         return {
             'id':instructor.pk,
             'full_name': f"{instructor.first_name} {instructor.last_name}",
-            "photo": instructor.photo.url if instructor.photo else None
+            "thumbnail": instructor.thumbnail.url if instructor.thumbnail else None
         }
   
         

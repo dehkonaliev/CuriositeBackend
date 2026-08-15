@@ -19,7 +19,6 @@ def send_verification_code(user_email, code):
     }
 
     email = resend.Emails.send(params)
-    print(email)
 
 
 def send_password_reset_link(user_email, link):
