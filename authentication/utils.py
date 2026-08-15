@@ -3,7 +3,7 @@ from .models import CodeVerify, CustomUser
 import re
 from rest_framework import serializers
 from django.utils import timezone
-from baseapp.models import MyToken
+from .models import MyToken
 import uuid
 from baseapp.utils import field_error
 

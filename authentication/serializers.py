@@ -8,7 +8,7 @@ import uuid
 from profiles.models import StudentProfile, InstructorProfile
 from payments.models import StudentWallet
 import re
-from baseapp.models import MyToken
+from .models import MyToken
 from baseapp.utils import field_error, success_response, error_response
 from baseapp.emails import send_password_reset_link
 from rest_framework_simplejwt.tokens import RefreshToken
