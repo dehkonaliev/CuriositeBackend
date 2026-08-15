@@ -45,8 +45,8 @@ class CustomUser(AbstractUser, BaseModel):
         FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp'])
     ])
     
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    # USERNAME_FIELD = 'email'
+    # REQUIRED_FIELDS = []
     
     
     @property

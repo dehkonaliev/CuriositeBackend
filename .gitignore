@@ -1,2 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
 .env
+media/
+staticfiles/
+static_root/
 .venv
