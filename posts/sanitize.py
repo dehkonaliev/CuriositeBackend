@@ -11,7 +11,11 @@ ALLOWED_ATTRS = {
     "*": ["style", "class"],
 }
 CSS_SANITIZER = CSSSanitizer(
-    allowed_css_properties=["font-size", "font-weight", "text-align", "color", "text-decoration"]
+    allowed_css_properties=[
+        "font-size", "font-weight", "font-family", "font-style",
+        "text-align", "color", "text-decoration",
+        "width", "height", "max-width", "max-height",
+    ]
 )
 
 

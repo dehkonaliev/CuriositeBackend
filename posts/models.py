@@ -15,14 +15,15 @@ class Post(BaseModel):
         ARCHIVED = "ARCHIVED", 'archived'
     instructor = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'user_role': "INSTRUCTOR"}, related_name='posts')
     title = models.CharField(max_length=1000)
-    summary = models.CharField(max_length=2000)
     body = models.TextField(blank=True)
-    cove_image = models.ImageField(upload_to='posts/covers/', blank=True, null=True)
+    cover_image = models.ImageField(upload_to='posts/covers/', blank=True, null=True)
     slug = models.SlugField(max_length=250, unique=True, blank=True)
     excerpt = models.CharField(max_length=300, blank=True)
     published_at = models.DateTimeField(auto_now=True, blank=True, null=True)
     views_count = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=20, choices=PostStatus.choices)
+    likes_count = models.PositiveIntegerField(default=0)
+    comments_count = models.PositiveIntegerField(default=0)
     
     class Meta:
         ordering = ['-created_at']
@@ -38,7 +39,7 @@ class Post(BaseModel):
             self.slug = slug
             
         if not self.excerpt and self.body:
-            text = re.sub(r"<[^>]+>", " ", self.content)
+            text = re.sub(r"<[^>]+>", " ", self.body)
             text = re.sub(r"\s+", " ", text).strip()
             self.excerpt = (text[:277] + "...") if len(text) > 280 else text
             
@@ -48,7 +49,7 @@ class Post(BaseModel):
     
     @property
     def reading_time_minutes(self):
-        words = len(re.sub(r"<[^>]+>", " ", self.content or "").split())
+        words = len(re.sub(r"<[^>]+>", " ", self.body or "").split())
         return max(1, math.ceil(words / 200))
     
     def __str__(self):
@@ -58,5 +59,20 @@ class Post(BaseModel):
 class PostImage(BaseModel):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='posts/body')
+    
+    
+class PostLike(BaseModel):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='my_likes')
+    
+    class Meta:
+        unique_together = ['post', 'user']
+        
+class PostComment(BaseModel):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='my_comments')
+    comment = models.CharField(max_length=2000)
+    
+
     
     

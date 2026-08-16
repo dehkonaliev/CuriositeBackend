@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/notifications/', include('notifications.urls')),
     path('api/certificates/', include('certificates.urls')),
     path('api/leaderboard/', include('leaders.urls')),
+    path('api/posts/', include('posts.urls')),
 ]
 
 
