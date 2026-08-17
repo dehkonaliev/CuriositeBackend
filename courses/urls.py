@@ -14,7 +14,7 @@ urlpatterns = [
     #COURSES
     path('course-create', CourseCreateAPIView.as_view()),
     path('course-update-delete/<uuid:pk>', CourseUpDelAPIView.as_view()),
-    path('course-detail/<uuid:pk>', CourseDetailAPIView.as_view()),
+    path('course-detail/<slug:slug>', CourseDetailAPIView.as_view()),
     path('my-feed', GetMyFeedAPIView.as_view()),
     path('complete-course/<uuid:pk>', CompleteCourseAPIView.as_view()),
     

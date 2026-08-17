@@ -103,7 +103,7 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate_thumbnail(self, value):
         if value:
-            max_size_mb = 2
+            max_size_mb = 10
             if value.size > max_size_mb * 1024 * 1024:
                 return field_error("thubmnail", f"Thumbnail size must not exceed {max_size_mb}MB.")
 
@@ -277,11 +277,19 @@ class CourseMinimalSerializer(serializers.ModelSerializer):
 
 
 class LessonSerializer(serializers.ModelSerializer):
+    quiz = serializers.SerializerMethodField()
+
     class Meta:
         model = Lesson
         fields = [
-            'id', 'title', 'lesson_type', 'duration_minutes', 'order', 'is_preview',
+            'id', 'title', 'lesson_type', 'duration_minutes', 'order', 'is_preview', 'quiz',
         ]
+
+    def get_quiz(self, obj):
+        quiz = getattr(obj, 'quiz', None)
+        if quiz:
+            return {'id': str(quiz.pk), 'title': quiz.title}
+        return None
 
 
 class ModuleDetailSerializer(serializers.ModelSerializer):
@@ -315,7 +323,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = [
-            'instructor', 'is_enrolled', 'last_accessed_lesson', 'title', 'slug', 'subtitle', 'description', 'category',
+            'id', 'instructor', 'is_enrolled', 'last_accessed_lesson', 'title', 'slug', 'subtitle', 'description', 'category',
             'tags', 'level', 'language', 'thumbnail', 'intro_video', 'pricing_type',
             'price', 'status', 'published_at', 'total_enrollments', 'average_rating',
             'rating_count', 'total_reviews', 'requirements', 'what_included', 'modules'
@@ -407,7 +415,10 @@ class CourseInfoSerializer(serializers.ModelSerializer):
     instructor = serializers.SerializerMethodField()
     class Meta:
         model = Course
-        fields = ['id', 'title', 'slug', 'subtitle', 'category', 'level', 'language', 'thumbnail', 'average_rating', 'rating_count', 'instructor', 'status']
+        fields = [
+            'id', 'title', 'slug', 'subtitle', 'category', 'level', 'language', 'thumbnail', 'average_rating',
+            'rating_count', 'instructor', 'status', 'pricing_type', 'price', 'published_at'
+        ]
         read_only_fields = fields
     def get_instructor(self, obj):
         instructor = obj.instructor

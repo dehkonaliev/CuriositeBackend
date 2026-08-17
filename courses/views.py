@@ -66,8 +66,13 @@ class CourseUpDelAPIView(APIView):
 
 class CourseDetailAPIView(APIView):
     permission_classes = [IsAdminOrOwnerOrReadOnlyPublished]
-    def get(self, request, pk):
-        course = Course.objects.filter(pk=pk).first()
+    def get(self, request, slug):
+        import uuid as _uuid
+        try:
+            _uuid.UUID(slug)
+            course = Course.objects.filter(pk=slug).first()
+        except (ValueError, AttributeError):
+            course = Course.objects.filter(slug=slug).first()
         
         if not course:
             return error_response(message="Course not found", status_code=404)

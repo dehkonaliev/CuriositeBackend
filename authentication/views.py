@@ -11,6 +11,7 @@ from rest_framework.exceptions import ValidationError
 from baseapp.emails import send_verification_code
 from baseapp.utils import success_response, error_response, field_error
 from django.db.models import Q
+from posts.serializers import AuthorMiniSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer,
     LoginSerializer, LogoutSerializer, UpdateProfileSerializer, PasswordChangeSerializer, 
@@ -87,11 +88,11 @@ class LoginAPIView(APIView):
         return success_response(message="Logged in", data=tokens)
         
 class LogoutAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     
     def post(self, request):
         serializer = LogoutSerializer(data=request.data)
-        serializer.is_valid()
+        serializer.is_valid(raise_exception=True)
         serializer.save()
         
         return success_response(message="Logged out")
@@ -294,9 +295,7 @@ class PasswordResetConfirmAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
-        return success_response(message="Password reset!")
-            
-        
+        return success_response(message="Password reset!")      
         
 class PreferenceUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -313,5 +312,27 @@ class PreferenceUpdateAPIView(APIView):
             return success_response(message="User preference", data=serializer.data)
         
             
+class SearchUserAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        user_role = request.query_params.get('user_role')
+        search = request.query_params.get('search')
+        users = CustomUser.objects.filter(account_status="ACTIVE").exclude(user_role="SUPERUSER")
+        if user_role:
+            users = users.filter(user_role=user_role)
+        if search:
+            terms = search.split()
+            name_query = Q()
+            for term in terms:
+                name_query &= (
+                    Q(first_name__icontains=term) | Q(last_name__icontains=term)
+                )
+            users = users.filter(
+                Q(username__icontains=search) | name_query
+            )[:20]
+            
+        serializer = AuthorMiniSerializer(users, many=True)
         
-                    
+        return success_response(message="Searched users", data=serializer.data)
+            
+        

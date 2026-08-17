@@ -6,6 +6,7 @@ from baseapp.permissions import IsOwner
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Review
 from courses.models import Course
+from baseapp.pagination import CommentPagination
 
 
 class ReviewCreateAPIView(APIView):
@@ -55,15 +56,20 @@ class GetCourseReviewsAPIView(APIView):
         if not course:
             return error_response(message="Course not found", status_code=404)
         reviews = course.reviews.order_by('created_at')
-        serializer = ReviewSerializer(reviews, many=True)
-        return success_response(message="Reviews on course", data=serializer.data)
+        
+        paginator = CommentPagination()
+        page = paginator.paginate_queryset(reviews, request)
+        serializer = ReviewSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
     
 class GetMyReviewsAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         reviews = request.user.my_reviews.order_by('-created_at')
-        serializer = MyReviewSerializer(reviews, many=True)
-        return success_response(message="Your reviews", data=serializer.data)
+        paginator = CommentPagination()
+        page = paginator.paginate_queryset(reviews, request)
+        serializer = MyReviewSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
     
 class IsReviewedAPIView(APIView):
     permission_classes = [IsAuthenticated]

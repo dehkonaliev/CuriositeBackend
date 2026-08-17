@@ -5,6 +5,7 @@ from django.utils.text import slugify
 import math
 import re
 from django.utils import timezone
+from courses.models import resize_image
 
 
 
@@ -25,6 +26,10 @@ class Post(BaseModel):
     likes_count = models.PositiveIntegerField(default=0)
     comments_count = models.PositiveIntegerField(default=0)
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._original_cover_image = self.cover_image.name if self.cover_image else None
+    
     class Meta:
         ordering = ['-created_at']
         
@@ -37,6 +42,9 @@ class Post(BaseModel):
                 n += 1
                 slug = f"{base}-{n}"
             self.slug = slug
+        
+        if self.cover_image and self.cover_image.name != self._original_cover_image:
+            self.cover_image = resize_image(self.cover_image, max_height=1200, max_width=1800)
             
         if not self.excerpt and self.body:
             text = re.sub(r"<[^>]+>", " ", self.body)

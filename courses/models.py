@@ -1,6 +1,23 @@
 from django.db import models
 from baseapp.models import BaseModel
 from django.utils.text import slugify
+from io import BytesIO
+from PIL import Image
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import sys
+
+def resize_image(image_field, max_width=800, max_height=800, quality=85):
+    img = Image.open(image_field)
+    img.thumbnail((max_width, max_height), Image.LANCZOS)
+
+    buffer = BytesIO()
+    img.save(buffer, format='JPEG', quality=quality)
+    buffer.seek(0)
+
+    return InMemoryUploadedFile(
+        buffer, 'ImageField', image_field.name,
+        'image/jpeg', sys.getsizeof(buffer), None
+    )
 
 class Category(BaseModel):
     name = models.CharField(max_length=100, unique=True)
@@ -81,16 +98,23 @@ class Course(BaseModel):
     requirements = models.CharField(max_length=1000, blank=True, null=True)
     what_included = models.CharField(max_length=1500, blank=True, null=True)
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._original_thumbnail = self.thumbnail.name if self.thumbnail else None
+    
     def save(self, *args, **kwargs):
-            if not self.slug:
-                base_slug = slugify(self.title)
-                slug = base_slug
-                counter = 1
-                while Course.objects.filter(slug=slug).exclude(pk=self.pk).exists():
-                    slug = f"{base_slug}-{counter}"
-                    counter += 1
-                self.slug = slug
-            super().save(*args, **kwargs)
+        if self.thumbnail and self.thumbnail.name != self._original_thumbnail:
+            self.thumbnail = resize_image(self.thumbnail)
+            
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            while Course.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
             
     def __str__(self):
         return self.title

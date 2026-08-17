@@ -2,13 +2,15 @@ from rest_framework import serializers
 from .models import Review
 from courses.models import Course
 from baseapp.utils import field_error
+from posts.serializers import AuthorMiniSerializer
 
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    user = AuthorMiniSerializer()
     class Meta:
         model = Review
-        fields = ['id', 'course', 'rating', 'comment']
+        fields = ['id', 'user', 'course', 'rating', 'comment']
         read_only_fields = ['id']
         
     def validate_course(self, course):
