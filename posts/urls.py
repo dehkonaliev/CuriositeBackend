@@ -6,7 +6,7 @@ from .views import (PostCreateAPIView, PostDetailAPIView, PostImageUploadAPIView
 
 urlpatterns = [
     path('create-post', PostCreateAPIView.as_view()),
-    path('post-detail/<uuid:pk>', PostDetailAPIView.as_view()),
+    path('post-detail/<slug:slug>', PostDetailAPIView.as_view()),
     path('post-image-upload', PostImageUploadAPIView.as_view()),
     path('post-update-delete/<uuid:pk>', PostUpdateDeleteAPIView.as_view()),
     path('filtered-posts', FilteredPostsAPIView.as_view()),

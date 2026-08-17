@@ -234,6 +234,7 @@ class FilteredCoursesAPIView(APIView):
             except:
                 return error_response(message="Rating must a number")
             
+        courses = courses.distinct().order_by('-created_at')            
         paginator = CoursePagination()
         page = paginator.paginate_queryset(courses, request)
         serializer = CourseInfoSerializer(page, many=True)
@@ -284,7 +285,7 @@ class FilteredCoursesInstructorAPIView(APIView):
             except:
                 return error_response(message="Rating must a number")
             
-        courses = courses.distinct()
+        courses = courses.distinct().order_by('-created_at')
         pagination = CoursePagination()
         page = pagination.paginate_queryset(courses, request)
         serializer = CourseInfoSerializer(page, many=True)

@@ -7,7 +7,7 @@ from baseapp.utils import field_error
 class AuthorMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'first_name', 'last_name', 'thumbnail']
+        fields = ['id', 'username', 'first_name', 'last_name', 'thumbnail', 'user_role']
         
         
 class PostImageUploadSerializer(serializers.ModelSerializer):
@@ -39,11 +39,12 @@ class PostDetailSerializer(serializers.ModelSerializer):
     instructor = AuthorMiniSerializer()
     reading_time_minutes = serializers.ReadOnlyField()
     is_liked = serializers.SerializerMethodField()
+    liked_by = serializers.SerializerMethodField()
     class Meta:
         model = Post
         fields = [
             'id', 'title', 'slug', 'cover_image', 'excerpt', 'instructor', 'reading_time_minutes',
-            'published_at', 'views_count', 'status', 'body', 'is_liked', 'likes_count', 'comments_count'
+            'published_at', 'views_count', 'status', 'body', 'is_liked', 'likes_count', 'comments_count', 'liked_by'
         ]
         read_only_fields = ['id', 'slug']
         
@@ -52,6 +53,12 @@ class PostDetailSerializer(serializers.ModelSerializer):
         if user.is_authenticated:
             return obj.likes.filter(user=user).exists()
         return False
+    
+    def get_liked_by(self, obj):
+        last_like = obj.likes.select_related('user').order_by('-created_at').first()
+        if last_like:
+            return AuthorMiniSerializer(last_like.user).data
+        return None
         
 
 class PostCreateUpdateSerializer(serializers.ModelSerializer):
@@ -102,7 +109,7 @@ class LikeInPostSerializer(serializers.ModelSerializer):
 class PostMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['id', 'title', 'excerpt']
+        fields = ['id', 'title', 'slug', 'excerpt']
         
 class LikeInUserSerializer(serializers.ModelSerializer):
     post = PostMiniSerializer()

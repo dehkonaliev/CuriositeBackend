@@ -7,10 +7,11 @@ from .serializers import (PostListSerializer, PostDetailSerializer, PostImageUpl
     CommentCreateUpdateSerializer, LikeInPostSerializer, LikeInUserSerializer, CommentsInPostSerializer, CommentsInUserSerializer,
                            
 )
+from django.core.cache import cache
 from baseapp.utils import success_response, error_response
 from .models import Post, PostImage, PostLike, PostComment
-from baseapp.pagination import CoursePagination
-from django.db.models import Q
+from baseapp.pagination import CoursePagination, LikePagination, CommentPagination
+from django.db.models import Q, F
 
 
 class PostImageUploadAPIView(APIView):
@@ -59,14 +60,21 @@ class PostUpdateDeleteAPIView(APIView):
     
 class PostDetailAPIView(APIView):
     permission_classes = [AllowAny]
-    def get(self, request, pk):
-        post = Post.objects.filter(pk=pk).first()
+    def get(self, request, slug):
+        post = Post.objects.filter(slug=slug).first()
         if not post:
             return error_response(message="Post not found", status_code=404)
+        cache_key = f"post_view:{post.pk}:{self._viewer_key(request)}"
+        if cache.add(cache_key, True, timeout=60 * 30):  # 30 min window
+            Post.objects.filter(pk=post.pk).update(views_count=F('views_count') + 1)        
         
         serializer = PostDetailSerializer(post, context={'user':request.user})
-        
         return success_response(message="Post detail", data=serializer.data)
+    
+    def _viewer_key(self, request):
+        if request.user.is_authenticated:
+            return f"user:{request.user.id}"
+        return f"ip:{request.META.get('REMOTE_ADDR', 'unknown')}"
     
 class FilteredPostsAPIView(APIView):
     permission_classes = [AllowAny]
@@ -111,7 +119,9 @@ class LikePostAPIView(APIView):
         like, created = PostLike.objects.get_or_create(user=request.user, post=post)
         if not created:
             like.delete()
+            Post.objects.filter(pk=pk).update(likes_count=F('likes_count')-1)
             return success_response(message="Post unliked")
+        Post.objects.filter(pk=pk).update(likes_count=F('likes_count')+1)
         return success_response(message="Post liked")
     
     def get(self, request, pk):
@@ -121,16 +131,21 @@ class LikePostAPIView(APIView):
         
         likes = PostLike.objects.filter(post=post).order_by('-created_at')
         
-        serializer = LikeInPostSerializer(likes, many=True)
-        return success_response(message="Post likes", data=serializer.data)
+        paginator = LikePagination()
+        page = paginator.paginate_queryset(likes, request)
+        serializer = LikeInPostSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
         
         
 class GetMyLikesAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         likes = PostLike.objects.filter(user=request.user).order_by('-created_at')
-        seriazlizer = LikeInUserSerializer(likes, many=True)
-        return success_response(message="My likes", data=seriazlizer.data)
+        paginator = LikePagination()
+        
+        page = paginator.paginate_queryset(likes, request)
+        serializer = LikeInUserSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 class PostCommentAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -141,6 +156,7 @@ class PostCommentAPIView(APIView):
         serializer = CommentCreateUpdateSerializer(data=request.data, context={'user': request.user, 'post': post})
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        Post.objects.filter(pk=pk).update(comments_count=F('comments_count')+1)
         
         return success_response(message="Comment created", data=serializer.data, status_code=201)
     
@@ -149,9 +165,11 @@ class PostCommentAPIView(APIView):
         if not post:
             return error_response(message="Post not found", status_code=404)
         comments = PostComment.objects.filter(post=post).order_by('-created_at')
-        serializer = CommentsInPostSerializer(comments, many=True)
-        
-        return success_response(message="Post comments", data=serializer.data)
+
+        paginator = CommentPagination()
+        page = paginator.paginate_queryset(comments, request)
+        serializer = CommentsInPostSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
     
 class CommentUpdateDeleteAPIView(APIView):
     permission_classes = [IsOwner]
@@ -174,6 +192,7 @@ class CommentUpdateDeleteAPIView(APIView):
         self.check_object_permissions(request, comment)
         
         comment.delete()
+        Post.objects.filter(pk=pk).update(comments_count=F('comments_count')-1)
         
         return success_response(message="Comment deleted")
 
@@ -181,9 +200,11 @@ class MyCommentsAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         comments = PostComment.objects.filter(user=request.user).order_by('-created_at')
-        serializer = CommentsInUserSerializer(comments, many=True)
-        
-        return success_response(message="My comments", data=serializer.data)
+
+        paginator = CommentPagination()
+        page = paginator.paginate_queryset(comments, request)
+        serializer = CommentsInUserSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
     
 
     
