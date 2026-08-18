@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (StudentProfileAPIView, InstructorProfileAPIView, GetInstructorProfileAPIView, GetStudentProfileAPIView,
     SendFriendRequestAPIView, RejectFriendRequestAPIView, CancelFriendRequestAPIView, AcceptFriendRequestAPIView,
-    GetMyRequestsAPIView, GetIncomingRequestsAPIView, FriendsAPIView
+    GetMyRequestsAPIView, GetIncomingRequestsAPIView, FriendsAPIView, RemoveFriendshipAPIView
 )
 
 urlpatterns = [
@@ -21,5 +21,6 @@ urlpatterns = [
     path('incoming-requests', GetIncomingRequestsAPIView.as_view()),
     
     # Friends
-    path('friends/<uuid:pk>', FriendsAPIView.as_view())
+    path('friends/<uuid:pk>', FriendsAPIView.as_view()),
+    path('remove-friendship/<uuid:pk>', RemoveFriendshipAPIView.as_view())
 ]

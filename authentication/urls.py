@@ -3,7 +3,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (EmailOrPhoneAPIView, VerifyCodeAPIView, ActivateUserAPIView, LoginAPIView, LogoutAPIView,
     UpdateProfileAPIView, PasswordChangeAPIView, DeleteAccountAPIView, VerifyEmailAPIView,
     VerifyPhoneAPIView, PasswordResetRequestAPIView, PasswordResetConfirmAPIView, UserProfileAPIView,
-    PreferenceUpdateAPIView, MyProfileAPIView, SearchUserAPIView
+    PreferenceUpdateAPIView, MyProfileAPIView, SearchUserAPIView, BecomeInstructorAPIView
 )
 
 urlpatterns = [
@@ -23,5 +23,8 @@ urlpatterns = [
     path('password-reset-confirm', PasswordResetConfirmAPIView.as_view()),
     path('token-refresh', TokenRefreshView.as_view()),
     path('preference', PreferenceUpdateAPIView.as_view()),
-    path('search-users', SearchUserAPIView.as_view())
+    path('search-users', SearchUserAPIView.as_view()),
+    
+    # ROLE CHANGES
+    path('become-instructor', BecomeInstructorAPIView.as_view()),
 ]

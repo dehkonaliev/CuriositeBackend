@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from baseapp.permissions import IsStudentAndOwner
 from .models import CustomUser, CodeVerify
 from .utils import generate_code, check_code, is_expired_code
 from rest_framework.response import Response
@@ -11,6 +12,7 @@ from rest_framework.exceptions import ValidationError
 from baseapp.emails import send_verification_code
 from baseapp.utils import success_response, error_response, field_error
 from django.db.models import Q
+from django.db import transaction
 from posts.serializers import AuthorMiniSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, ActivateUserSerializer,
@@ -18,6 +20,7 @@ from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, Activate
     VerifyEmailSerializer, VerifyPhoneSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
     UserSerializer, UserPreferenceSerializer
 )
+from profiles.models import InstructorProfile
 
 
 
@@ -311,7 +314,7 @@ class PreferenceUpdateAPIView(APIView):
             
             return success_response(message="User preference", data=serializer.data)
         
-            
+
 class SearchUserAPIView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
@@ -335,4 +338,24 @@ class SearchUserAPIView(APIView):
         
         return success_response(message="Searched users", data=serializer.data)
             
-        
+class BecomeInstructorAPIView(APIView):
+    permission_classes = [IsStudentAndOwner]
+    def patch(self, request):
+        student = request.user
+
+        with transaction.atomic():
+            student.enrollments.all().delete()
+            student.student_profile.delete()
+            student.quiz_attempts.all().delete()
+            student.notifications.all().delete()
+            student.my_certificates.all().delete()
+            student.wallet.delete()
+            student.subscriptions.all().delete()
+            student.friendships.all().delete()
+            student.my_requests.all().delete()
+
+            InstructorProfile.objects.create(instructor=student)
+            student.user_role = CustomUser.UserRole.INSTRUCTOR
+            student.save(update_fields=["user_role"])
+            
+        return success_response(message="You are now an instructor")

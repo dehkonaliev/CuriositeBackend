@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import (StudentProfileSerializer, InstructorProfileSerializer, GetStudentProfileSerializer, GetInstructorProfileSerializer,
     SendFriendRequestSerializer, FriendSerializer
 )
+from posts.serializers import AuthorMiniSerializer
 
 
 class StudentProfileAPIView(APIView):
@@ -66,8 +67,13 @@ class GetStudentProfileAPIView(APIView):
             return error_response(message="Student not found", status_code=404)
         
         profile = getattr(student, 'student_profile', None)
-        if profile and not profile.is_visible and student != request.user:
-            return error_response(message="This student's profile is private", status_code=404)
+        if profile and not profile.is_visible and student != request.user and not student.friendships.filter(friend=request.user).exists():
+            serializer = AuthorMiniSerializer(student)
+            errors = {
+                **serializer.data,
+                "can_send_friend_request": True,
+            }
+            return error_response(message="This student's profile is private", errors=errors, status_code=403)
         
         serializer = GetStudentProfileSerializer(student)
         
@@ -111,6 +117,7 @@ class AcceptFriendRequestAPIView(APIView):
             FriendShip(student=user, friend=friend_request.from_student),
             FriendShip(student=friend_request.from_student, friend=user),
         ], ignore_conflicts=True)
+        friend_request.delete()
         
         return success_response(message="Request accepted")
     
@@ -169,4 +176,17 @@ class FriendsAPIView(APIView):
         serializer = FriendSerializer(friends, many=True)
         
         return success_response(message="Friend", data=serializer.data)
+    
+    
+class RemoveFriendshipAPIView(APIView):
+    permission_classes = [IsStudentAndOwner]
+    def delete(self, request, pk):
+        friend = CustomUser.objects.filter(pk=pk).first()
+        friendship = FriendShip.objects.filter(student=request.user, friend=friend).first()
+        if not friendship:
+            return error_response(message="Friendship not found", status_code=404)
+        friendship.delete()
+        FriendShip.objects.filter(friend=request.user, student=friend).delete()
+        
+        return success_response(message="Friendship removed")
         
