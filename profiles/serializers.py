@@ -69,8 +69,8 @@ class InstructorProfileSerializer(serializers.ModelSerializer):
 class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
-        fields = ['gender', 'bio', 'is_visible', 'xp', 'streak', 'level', 'total_courses_enrolled', 'total_courses_completed', 'total_certificates_earned']
-        read_only_fields = ['xp', 'streak', 'level', 'total_courses_enrolled', 'total_courses_completed', 'total_certificates_earned']
+        fields = ['gender', 'bio', 'is_visible', 'xp', 'friends_count', 'streak', 'level', 'total_courses_enrolled', 'total_courses_completed', 'total_certificates_earned']
+        read_only_fields = ['xp', 'streak', 'level', 'friends_count', 'total_courses_enrolled', 'total_courses_completed', 'total_certificates_earned']
 
     def validate_gender(self, value):
         valid_values = StudentProfile.Genders.values
@@ -138,6 +138,7 @@ class FriendSerializer(serializers.ModelSerializer):
         
         
     def get_is_visible(self, obj):
-        return obj.friend.student_profile.is_visible
+        profile = getattr(obj.friend, 'student_profile', None)
+        return profile.is_visible if profile else True
         
     

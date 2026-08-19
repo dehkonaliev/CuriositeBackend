@@ -20,7 +20,7 @@ from .serializers import (EmailOrPhoneSerializer, VerifyCodeSerializer, Activate
     VerifyEmailSerializer, VerifyPhoneSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
     UserSerializer, UserPreferenceSerializer
 )
-from profiles.models import InstructorProfile
+from profiles.models import InstructorProfile, FriendShip
 
 
 
@@ -352,6 +352,7 @@ class BecomeInstructorAPIView(APIView):
             student.wallet.delete()
             student.subscriptions.all().delete()
             student.friendships.all().delete()
+            FriendShip.objects.filter(friend=student).delete()
             student.my_requests.all().delete()
 
             InstructorProfile.objects.create(instructor=student)

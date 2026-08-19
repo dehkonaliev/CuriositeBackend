@@ -7,11 +7,11 @@ from posts.serializers import AuthorMiniSerializer
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user = AuthorMiniSerializer()
+    user = AuthorMiniSerializer(read_only=True)
     class Meta:
         model = Review
         fields = ['id', 'user', 'course', 'rating', 'comment']
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'user']
         
     def validate_course(self, course):
         return course
@@ -36,9 +36,15 @@ class ReviewSerializer(serializers.ModelSerializer):
         course = validated_data.get('course')
         if Review.objects.filter(user=user, course=course).exists():
             return field_error("course", "You can rate a specific course once only")
-        review = Review.objects.create(user=user, course=course, comment=validated_data.get('comment'), rating=validated_data.get('rating'))
-        return review
-    
+        validated_data['user'] = user
+        return super().create(validated_data)
+
+class GetReviewSerializer(serializers.ModelSerializer):
+    user = AuthorMiniSerializer()
+    class Meta:
+        model = Review
+        fields = ['id', 'user', 'course', 'rating', 'comment']
+
 class CourseMinimalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course

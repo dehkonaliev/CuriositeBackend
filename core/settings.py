@@ -20,6 +20,7 @@ DEBUG = os.environ.get('DEBUG') == 'True'
 ALLOWED_HOSTS = [
     'www.curiosite.uz',
     'curiosite.uz',
+    'curiositefrontend-production.up.railway.app',
     'curiosite.up.railway.app',
     'localhost',
     '127.0.0.1',
@@ -27,6 +28,7 @@ ALLOWED_HOSTS = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
+    'https://curiositefrontend-production.up.railway.app',
     'https://www.curiosite.uz',
     'https://curiosite.uz',
     'https://curiosite.up.railway.app',
@@ -34,6 +36,7 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = [
     'https://www.curiosite.uz',
+    'https://curiositefrontend-production.up.railway.app',
     'https://curiosite.uz',
     'https://curiosite.up.railway.app',
     'http://127.0.0.1:8000',

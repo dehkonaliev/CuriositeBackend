@@ -10,6 +10,7 @@ from .serializers import (StudentProfileSerializer, InstructorProfileSerializer,
     SendFriendRequestSerializer, FriendSerializer
 )
 from posts.serializers import AuthorMiniSerializer
+from notifications.models import Notification
 
 
 class StudentProfileAPIView(APIView):
@@ -99,6 +100,9 @@ class SendFriendRequestAPIView(APIView):
         serializer = SendFriendRequestSerializer(data=request.data, context={'request':request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        user = request.user
+        message = f"{user.first_name} {user.last_name} sent you a friend request"
+        Notification.objects.create(user=serializer.validated_data['to_student'], sender=request.user, message=message, notif_type="REQUEST")
         
         return success_response(message="Request sent", data=serializer.data)
     
@@ -118,6 +122,8 @@ class AcceptFriendRequestAPIView(APIView):
             FriendShip(student=friend_request.from_student, friend=user),
         ], ignore_conflicts=True)
         friend_request.delete()
+        message = f"{user.first_name} {user.last_name} accepted your invitation"
+        Notification.objects.create(user=friend_request.from_student, message=message, notif_type="NOTIFICATION")
         
         return success_response(message="Request accepted")
     
@@ -132,6 +138,8 @@ class RejectFriendRequestAPIView(APIView):
         
         friend_request.request_status = 'REJECTED'
         friend_request.save()
+        message = f"{user.first_name} {user.last_name} rejected your friend request"
+        Notification.objects.create(user=friend_request.from_student, message=message, notif_type="NOTIFICATION")
         
         return success_response(message="Request rejected")
     

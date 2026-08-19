@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from baseapp.utils import success_response, error_response
-from .serializers import ReviewSerializer, MyReviewSerializer
+from .serializers import ReviewSerializer, MyReviewSerializer, GetReviewSerializer
 from baseapp.permissions import IsOwner
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Review
@@ -18,7 +18,7 @@ class ReviewCreateAPIView(APIView):
         
         serializer = ReviewSerializer(data=request.data, context={'user': user})
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(user=user)
         
         return success_response(message="Review Created", data=serializer.data)
     
@@ -59,7 +59,7 @@ class GetCourseReviewsAPIView(APIView):
         
         paginator = CommentPagination()
         page = paginator.paginate_queryset(reviews, request)
-        serializer = ReviewSerializer(page, many=True)
+        serializer = GetReviewSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)
     
 class GetMyReviewsAPIView(APIView):
