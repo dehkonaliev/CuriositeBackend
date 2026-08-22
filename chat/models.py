@@ -7,7 +7,7 @@ class Conversation(BaseModel):
     name = models.CharField(max_length=255, blank=True)
     
     def __str__(self):
-        return self.name or self.pk
+        return self.name or str(self.pk)
     
 
 class ConversationParticipant(BaseModel):
@@ -22,9 +22,11 @@ class Message(BaseModel):
     sender = models.ForeignKey('authentication.CustomUser', on_delete=models.SET_NULL, null=True, related_name='sent_messages')
     content = models.TextField(blank=True)
     file = models.FileField(upload_to="chat_attachments/", null=True, blank=True)
-    is_reply = models.BooleanField(default=False)
-    reply_to = models.ForeignKey('chat.Message', on_delete=models.SET_NULL, null=True)
+    reply_to = models.ForeignKey('chat.Message', on_delete=models.SET_NULL, null=True, related_name='+')
     forward = models.JSONField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.sender} - {self.content}"   
     
     
     

@@ -325,8 +325,8 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'instructor', 'is_enrolled', 'last_accessed_lesson', 'title', 'slug', 'subtitle', 'description', 'category',
             'tags', 'level', 'language', 'thumbnail', 'intro_video', 'pricing_type',
-            'price', 'status', 'published_at', 'total_enrollments', 'average_rating',
-            'rating_count', 'total_reviews', 'requirements', 'what_included', 'modules'
+            'price', 'status', 'published_at', 'total_enrollments', 'average_rating', 'total_shares', 'total_reading_time',
+            'rating_count', 'total_reviews', 'requirements', 'what_included', 'modules',
         ]
         
     def get_is_enrolled(self, obj):
@@ -416,8 +416,9 @@ class CourseInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = [
-            'id', 'title', 'slug', 'subtitle', 'category', 'level', 'language', 'thumbnail', 'average_rating',
-            'rating_count', 'instructor', 'status', 'pricing_type', 'price', 'published_at'
+            'id', 'title', 'slug', 'subtitle', 'category', 'level', 'language', 'thumbnail', 'total_enrollments',
+            'average_rating', 'rating_count', 'total_reviews', 'instructor', 'status', 'pricing_type', 'price',
+            'total_shares', 'total_reading_time',
         ]
         read_only_fields = fields
     def get_instructor(self, obj):
