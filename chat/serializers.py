@@ -4,6 +4,7 @@ from django.db.models import Count
 from rest_framework import serializers
 from baseapp.utils import field_error
 from authentication.models import CustomUser
+from posts.serializers import AuthorMiniSerializer
 
 
 from chat.models import Conversation, ConversationParticipant, Message, UnreadMessage
@@ -69,6 +70,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class ConversationParticipantSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
+    user = AuthorMiniSerializer()
 
     class Meta:
         model = ConversationParticipant
