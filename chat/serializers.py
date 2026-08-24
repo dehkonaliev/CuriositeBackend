@@ -43,8 +43,9 @@ class MessageSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         content = attrs.get("content", "")
         file = attrs.get("file")
+        forward = attrs.get("forward")
 
-        if not content.strip() and not file:
+        if not content.strip() and not file and not forward:
             return field_error("non_field_error", "Message must have either content or a file attached.")
         return attrs
 

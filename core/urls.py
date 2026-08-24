@@ -21,6 +21,7 @@ urlpatterns = [
     path('api/leaderboard/', include('leaders.urls')),
     path('api/posts/', include('posts.urls')),
     path('api/chat/', include('chat.urls')),
+    path('api/ai/', include('integration.urls')),
 ]
 
 

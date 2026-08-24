@@ -100,7 +100,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "sender": str(message.sender_id),
                 "sender_name": str(message.sender),
                 "content": message.content,
+                "file": message.file.url if message.file else None,
                 "reply_to": str(message.reply_to_id) if message.reply_to_id else None,
+                "forward": message.forward,
                 "created_at": message.created_at.isoformat(),
             },
         )
