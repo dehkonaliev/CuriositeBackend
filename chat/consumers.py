@@ -112,6 +112,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def chat_message(self, event):
         await self.send_json(event)
 
+    async def chat_message_edit(self, event):
+        await self.send_json(event)
+
+    async def chat_message_delete(self, event):
+        await self.send_json(event)
+
+    async def conversation_deleted(self, event):
+        await self.send_json(event)
+
     async def typing_event(self, event):
         if event["user_id"] == str(self.user.id):
             return

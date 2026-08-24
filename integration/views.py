@@ -4,7 +4,8 @@ from baseapp.utils import error_response, success_response
 from .serializers import GetAudioSerializer
 from rest_framework.permissions import IsAuthenticated
 from courses.models import Lesson
-from .integrate import generate_text, generate_audio
+from .integrate import generate_text_async, generate_audio_async
+from asgiref.sync import async_to_sync
 
 
 
@@ -19,11 +20,11 @@ class AskInChatAPIView(APIView):
         prompt = request.query_params.get('prompt')
         
         if interaction_id:
-            output = generate_text(lesson.title, first_name=request.user.first_name, interaction_id=interaction_id, student_message=prompt)
+            output = async_to_sync(generate_text_async)(lesson.title, first_name=request.user.first_name, interaction_id=interaction_id, student_message=prompt)
             return success_response(message="Initialized", data=output)
             
         else:
-            output = generate_text(lesson.title, first_name=request.user.first_name)
+            output = async_to_sync(generate_text_async)(lesson.title, first_name=request.user.first_name)
             return success_response(message="Response", data=output)
         
         
@@ -35,4 +36,4 @@ class GetAudioAPIView(APIView):
         
         text_input = serializer.validated_data.get('text_input')
         
-        return generate_audio(text_input)
+        return async_to_sync(generate_audio_async)(text_input)

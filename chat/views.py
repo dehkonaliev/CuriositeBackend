@@ -66,19 +66,102 @@ class ConversationDetailView(APIView):
 
         serializer = ConversationSerializer(conversation, context={"request": request})
         return success_response(message="Conversation detail", data=serializer.data)
+
+    def delete(self, request, conversation_id):
+        """DELETE — removes the whole conversation for every participant
+        (messages cascade). Everyone still connected gets a
+        conversation_deleted event so open panes can react."""
+        conversation = self.get_object(request, conversation_id)
+        if conversation is None:
+            return error_response(message="Conversation not found", status_code=404)
+
+        broadcast_chat_event(
+            conversation_id,
+            {
+                "type": "conversation_deleted",
+                "conversation_id": str(conversation_id),
+            },
+        )
+        conversation.delete()
+        return success_response(message="Conversation deleted")
     
     
+class MessageDetailActionView(APIView):
+    """PATCH/DELETE /api/chat/messages/<id>/ — edit or remove a message.
+    Only the sender may touch their own message. Both actions broadcast
+    chat_message_edit / chat_message_delete to every open socket in the
+    conversation (including the actor, whose client dedupes)."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self, request, message_id):
+        return Message.objects.filter(
+            pk=message_id, conversation__participants__user=request.user
+        ).first()
+
+    def patch(self, request, message_id):
+        message = self.get_object(request, message_id)
+        if message is None:
+            return error_response(message="Message not found", status_code=404)
+        if message.sender_id != request.user.id:
+            return error_response(
+                message="You can only edit your own messages.", status_code=403
+            )
+
+        content = str(request.data.get("content", ""))
+        if not content.strip():
+            return error_response(message="Message cannot be empty.", status_code=400)
+
+        message.content = content
+        message.save(update_fields=["content"])
+
+        broadcast_chat_event(
+            message.conversation_id,
+            {
+                "type": "chat_message_edit",
+                "id": str(message.id),
+                "conversation": str(message.conversation_id),
+                "content": message.content,
+            },
+        )
+        return success_response(message="Message edited")
+
+    def delete(self, request, message_id):
+        message = self.get_object(request, message_id)
+        if message is None:
+            return error_response(message="Message not found", status_code=404)
+        if message.sender_id != request.user.id:
+            return error_response(
+                message="You can only delete your own messages.", status_code=403
+            )
+
+        payload = {
+            "type": "chat_message_delete",
+            "id": str(message.id),
+            "conversation": str(message.conversation_id),
+        }
+        message.delete()
+        broadcast_chat_event(message.conversation_id, payload)
+        return success_response(message="Message deleted")
+
+
 class MessageListPagination(PageNumberPagination):
     page_size = 30
+
+
+def broadcast_chat_event(conversation_id, payload):
+    """Generic group broadcast for one conversation. `payload["type"]` selects
+    the consumer handler (chat_message, chat_message_edit, ...)."""
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(f"conversation_{conversation_id}", payload)
 
 
 def broadcast_chat_message(message):
     """Push a saved Message to every open socket in its conversation.
     Mirrors the WS payload so REST- and socket-created messages render
     identically (including file attachments and forwarded previews)."""
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        f"conversation_{message.conversation_id}",
+    broadcast_chat_event(
+        message.conversation_id,
         {
             "type": "chat_message",
             "id": str(message.id),
