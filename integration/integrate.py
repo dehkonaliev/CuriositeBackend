@@ -55,7 +55,7 @@ async def generate_audio_async(text_input, filename="ai_response.wav"):
         # Use client.aio here as well
         interaction = await client.aio.interactions.create(
             model="gemini-3.1-flash-tts-preview",
-            input=f"Talk friendly like a human(breathing and umm): {text_input}",
+            input=f"Talk with anger(breathing and umm): {text_input}",
             response_format={"type": "audio"},
             generation_config={
                 "speech_config": [
