@@ -6,7 +6,7 @@ from baseapp.utils import error_response, success_response
 from django.core.exceptions import ValidationError
 from django.db.models import F, Max
 
-from chat.models import Conversation, Message
+from chat.models import Conversation, ConversationParticipant, Message
 from chat.serializers import ConversationSerializer, MessageSerializer
 from courses.models import Course
 from posts.models import Post
@@ -328,6 +328,41 @@ class MessageForwardView(APIView):
         except (ValidationError, ValueError, TypeError):
             # malformed item_id (not a UUID)
             return None
+
+
+class JoinCourseGroupView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        course_id = request.data.get("course_id")
+        if not course_id:
+            return error_response(message="course_id is required.", status_code=400)
+
+        try:
+            course = Course.objects.get(pk=course_id)
+        except (Course.DoesNotExist, ValidationError, ValueError, TypeError):
+            return error_response(message="Course not found.", status_code=404)
+
+        conversation, created = Conversation.objects.get_or_create(
+            course=course,
+            is_group=True,
+            defaults={"name": course.title},
+        )
+
+        participant, added = ConversationParticipant.objects.get_or_create(
+            conversation=conversation,
+            user=request.user,
+        )
+
+        if created:
+            message = "Course group created"
+        elif added:
+            message = "Joined course group"
+        else:
+            message = "Already in course group"
+
+        serializer = ConversationSerializer(conversation, context={"request": request})
+        return success_response(message=message, data=serializer.data)
 
 
 class ChatConnectTicketView(APIView):

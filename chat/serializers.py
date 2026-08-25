@@ -88,7 +88,7 @@ class ConversationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Conversation
-        fields = ["id", "is_group", "name", "participants", "last_message", "unread_count", "created_at"]
+        fields = ["id", "is_group", "name", "course", "participants", "last_message", "unread_count", "created_at"]
         read_only_fields = ["id", "created_at"]
 
     def get_last_message(self, obj):

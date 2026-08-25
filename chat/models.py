@@ -1,9 +1,11 @@
 from django.db import models
 from baseapp.models import BaseModel
+from courses.models import Course
 
 
 class Conversation(BaseModel):
     is_group = models.BooleanField(default=False)
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=255, blank=True)
     
     def __str__(self):

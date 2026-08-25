@@ -3,6 +3,7 @@ from django.urls import path
 from chat.views import (
     ConversationListCreateView,
     ConversationDetailView,
+    JoinCourseGroupView,
     MessageListView,
     MessageDetailActionView,
     MessageFileUploadView,
@@ -17,5 +18,6 @@ urlpatterns = [
     path("messages/<uuid:message_id>/", MessageDetailActionView.as_view(), name="message-detail-action"),
     path("conversations/<uuid:conversation_id>/messages/upload/", MessageFileUploadView.as_view(), name="conversation-message-upload"),
     path("conversations/<uuid:conversation_id>/messages/forward/", MessageForwardView.as_view(), name="conversation-message-forward"),
+    path("join-course-group/", JoinCourseGroupView.as_view(), name="join-course-group"),
     path("connect-ticket/", ChatConnectTicketView.as_view(), name="chat-connect-ticket"),
 ]
