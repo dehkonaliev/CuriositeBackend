@@ -12,7 +12,7 @@ from asgiref.sync import async_to_sync
 class AskInChatAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, lesson_pk):
-        lesson = Lesson.objects.filter(pk=lesson_pk, module__course__status="PUBLISHED").first()
+        lesson = Lesson.objects.filter(pk=lesson_pk, lesson_type__in=['VIDEO', 'ARTICLE'], module__course__status="PUBLISHED").first()
         if not lesson:
             return error_response(message="Lesson not found", status_code=404)
     
