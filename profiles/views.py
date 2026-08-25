@@ -11,6 +11,7 @@ from .serializers import (StudentProfileSerializer, InstructorProfileSerializer,
 )
 from posts.serializers import AuthorMiniSerializer
 from notifications.models import Notification
+from baseapp.emails import send_notification
 
 
 class StudentProfileAPIView(APIView):
@@ -102,8 +103,10 @@ class SendFriendRequestAPIView(APIView):
         serializer.save()
         user = request.user
         message = f"{user.first_name} {user.last_name} sent you a friend request"
-        Notification.objects.create(user=serializer.validated_data['to_student'], sender=request.user, message=message, notif_type="REQUEST")
-        
+        to_student = serializer.validated_data['to_student']
+        Notification.objects.create(user=to_student, sender=request.user, message=message, notif_type="REQUEST")
+        message = f"{user.first_name} {user.last_name} sent you a friend request on Curiosite. To accept it go to your Network or just click the link below"
+        send_notification(to_student.email, message, data="https://curiosite.uz/network")
         return success_response(message="Request sent", data=serializer.data)
     
     
@@ -122,9 +125,10 @@ class AcceptFriendRequestAPIView(APIView):
             FriendShip(student=friend_request.from_student, friend=user),
         ], ignore_conflicts=True)
         friend_request.delete()
-        message = f"{user.first_name} {user.last_name} accepted your invitation"
-        Notification.objects.create(user=friend_request.from_student, message=message, notif_type="NOTIFICATION")
-        
+        message = f"Congrats! {user.first_name} {user.last_name} accepted your invitation"
+        from_user = friend_request.from_student
+        Notification.objects.create(user=from_user, message=message, notif_type="NOTIFICATION")
+        send_notification(from_user.email, message)
         return success_response(message="Request accepted")
     
 

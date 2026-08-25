@@ -47,13 +47,7 @@
             </p>
 
             {% if data %}
-            <div class="data-box" style="margin:0 0 28px;padding:20px;background-color:#fafaf9;border:1px solid #e7e5e4;border-radius:12px;">
-              {% for key, value in data.items %}
-              <p style="margin:0 0 8px;font-size:14px;line-height:1.5;color:#57534e;">
-                <span style="font-weight:700;color:#1c1917;">{{ key|title }}:</span> {{ value }}
-              </p>
-              {% endfor %}
-            </div>
+              <a href="{{ data }}" style="display:inline-block;margin:0 0 28px;font-size:14px;line-height:1.5;color:#0ea5e9;text-decoration:underline;">Navigate link</a>
             {% endif %}
 
             <div class="divider" style="margin:24px 0 0;border-top:1px solid #e7e5e4;"></div>

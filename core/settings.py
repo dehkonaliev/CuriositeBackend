@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'certificates',
     'posts',
     'chat',
+    'management',
 ]
 
 ASGI_APPLICATION = "core.asgi.application"

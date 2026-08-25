@@ -22,6 +22,7 @@ urlpatterns = [
     path('api/posts/', include('posts.urls')),
     path('api/chat/', include('chat.urls')),
     path('api/ai/', include('integration.urls')),
+    path('api/admin/', include('management.urls')),
 ]
 
 
