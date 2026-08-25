@@ -48,13 +48,15 @@ class InstructorListSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source='instructor.first_name', read_only=True)
     last_name = serializers.CharField(source='instructor.last_name', read_only=True)
     account_status = serializers.CharField(source='instructor.account_status', read_only=True)
+    thumbnail = serializers.ImageField(source='instructor.thumbnail', read_only=True)
+    photo = serializers.ImageField(source='instructor.photo', read_only=True)
 
     class Meta:
         model = InstructorProfile
         fields = [
             'instructor_id', 'email', 'first_name', 'last_name',
-            'account_status', 'headline', 'approval_status',
-            'total_courses_created', 'total_students_taught', 'created_at',
+            'account_status', 'approval_status', 'thumbnail', 'photo',
+            'headline', 'total_courses_created', 'total_students_taught', 'created_at',
         ]
 
 
@@ -76,12 +78,15 @@ class StudentListSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source='student.first_name', read_only=True)
     last_name = serializers.CharField(source='student.last_name', read_only=True)
     account_status = serializers.CharField(source='student.account_status', read_only=True)
+    thumbnail = serializers.ImageField(source='student.thumbnail', read_only=True)
+    photo = serializers.ImageField(source='student.photo', read_only=True)
 
     class Meta:
         model = StudentProfile
         fields = [
             'student_id', 'email', 'first_name', 'last_name',
-            'account_status', 'xp', 'streak', 'level',
+            'account_status', 'thumbnail', 'photo',
+            'xp', 'streak', 'level',
             'total_courses_enrolled', 'total_courses_completed',
             'total_certificates_earned', 'created_at',
         ]
