@@ -2,6 +2,7 @@ from rest_framework import serializers
 from baseapp.utils import field_error
 from .models import Course, Category, Module, Lesson, Tag
 from authentication.models import CustomUser
+from django.db import models
 from django.utils.text import slugify
 from baseapp.utils import field_error
 
@@ -219,7 +220,7 @@ class LessonCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ['id', 'module', 'title', 'lesson_type', 'video_url', 'content', 'duration_minutes', 'order', 'is_preview']
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'order']
         
     def validate_title(self, value):
         value = value.strip()
@@ -245,12 +246,6 @@ class LessonCreateUpdateSerializer(serializers.ModelSerializer):
             return field_error("duration_minutes", "Duration time must be greater than 0")
         
         return value
-    
-    def validate_order(self, value):
-        if not value:
-            return field_error("order", "Order time must be greater than 0")
-        
-        return value
         
     def validate(self, attrs):
         lesson_type = attrs.get('lesson_type', getattr(self.instance, 'lesson_type', None))
@@ -264,6 +259,12 @@ class LessonCreateUpdateSerializer(serializers.ModelSerializer):
             field_error("content", "Content is required for article lessons")
 
         return attrs
+
+    def create(self, validated_data):
+        module = validated_data['module']
+        last_order = module.lessons.aggregate(max_order=models.Max('order'))['max_order'] or 0
+        validated_data['order'] = last_order + 1
+        return super().create(validated_data)
 
 # MODULE DETAIL
 class CourseMinimalSerializer(serializers.ModelSerializer):
