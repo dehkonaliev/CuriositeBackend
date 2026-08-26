@@ -146,11 +146,11 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             getattr(self.instance, 'price', None)
         )
 
-        if pricing_type == Course.PricingType.FREE:
+        if pricing_type in [Course.PricingType.FREE, Course.PricingType.MONTHLY]:
             attrs['price'] = None
-        elif pricing_type in (Course.PricingType.MONTHLY, Course.PricingType.SPECIAL):
+        elif pricing_type == Course.PricingType.SPECIAL:
             if price is None:
-                return field_error("price", "Price is required for monthly or special pricing")
+                return field_error("price", "Price is required special pricing")
             if price <= 0:
                 return field_error("price", "Price must be greater than 0 for paid courses")
 

@@ -254,8 +254,8 @@ STATIC_URL = 'static/'
 
 AUTH_USER_MODEL = 'authentication.CustomUser'
 
-EMAIL_EXPIRATION_TIME = 100
-PHONE_EXPIRATION_TIME = 100
+EMAIL_EXPIRATION_TIME = 5
+PHONE_EXPIRATION_TIME = 5
 
 # Where password-reset links in emails point (the frontend app).
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')

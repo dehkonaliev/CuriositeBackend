@@ -19,6 +19,8 @@ urlpatterns = [
 
     path('enrollments/', views.AdminEnrollmentListView.as_view(), name='admin-enrollments'),
 
+    path('posts/', views.AdminPostListView.as_view(), name='admin-posts'),
+
     path('wallet-topup/', views.AdminWalletTopupView.as_view(), name='admin-wallet-topup'),
 
     path('notifications/send/', views.AdminSendNotificationView.as_view(), name='admin-send-notification'),

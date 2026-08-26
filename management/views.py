@@ -7,7 +7,9 @@ from authentication.models import CustomUser
 from profiles.models import InstructorProfile, StudentProfile
 from courses.models import Course, Lesson
 from enrollments.models import Enrollment
+from certificates.models import Certificate
 from payments.models import StudentWallet
+from posts.models import Post
 
 from .permissions import IsSuperuser
 from .serializers import (
@@ -24,6 +26,11 @@ from .serializers import (
     WalletTopupSerializer,
     SendNotificationSerializer,
     AdminEnrollmentSerializer,
+    AdminPostListSerializer,
+    AdminInstructorCourseSerializer,
+    AdminInstructorPostSerializer,
+    AdminInstructorEnrollmentSerializer,
+    AdminInstructorCertificateSerializer,
 )
 from baseapp.utils import success_response, error_response
 
@@ -108,8 +115,24 @@ class AdminInstructorDetailView(APIView):
         except InstructorProfile.DoesNotExist:
             return error_response("Instructor not found.", status_code=404)
 
-        serializer = InstructorDetailSerializer(profile)
-        return success_response("Instructor detail retrieved.", serializer.data)
+        instructor_user = profile.instructor
+
+        courses = Course.objects.filter(instructor=instructor_user).order_by('-created_at')
+        posts = Post.objects.filter(instructor=instructor_user).order_by('-created_at')
+        enrollments = Enrollment.objects.filter(
+            course__instructor=instructor_user
+        ).select_related('student', 'course').order_by('-enrolled_at')
+        certificates = Certificate.objects.filter(
+            enrollment__course__instructor=instructor_user
+        ).select_related('student').order_by('-created_at')
+
+        data = InstructorDetailSerializer(profile).data
+        data['courses'] = AdminInstructorCourseSerializer(courses, many=True).data
+        data['posts'] = AdminInstructorPostSerializer(posts, many=True).data
+        data['enrollments'] = AdminInstructorEnrollmentSerializer(enrollments, many=True).data
+        data['certificates'] = AdminInstructorCertificateSerializer(certificates, many=True).data
+
+        return success_response("Instructor detail retrieved.", data)
 
 
 class AdminInstructorApprovalView(APIView):
@@ -332,3 +355,32 @@ class AdminSendNotificationView(APIView):
             "Notifications sent successfully.",
             result,
         )
+
+
+# ──────────────────────────────────────────────
+#  POST MONITORING
+# ──────────────────────────────────────────────
+
+class AdminPostListView(APIView):
+    permission_classes = [IsSuperuser]
+
+    def get(self, request):
+        posts = Post.objects.select_related('instructor').all()
+
+        post_status = request.query_params.get('status')
+        if post_status:
+            posts = posts.filter(status=post_status.upper())
+
+        search = request.query_params.get('search')
+        if search:
+            posts = posts.filter(
+                Q(title__icontains=search)
+                | Q(instructor__first_name__icontains=search)
+                | Q(instructor__last_name__icontains=search)
+            )
+
+        ordering = request.query_params.get('ordering', '-created_at')
+        posts = posts.order_by(ordering)
+
+        serializer = AdminPostListSerializer(posts, many=True)
+        return success_response("Posts retrieved.", serializer.data)

@@ -331,7 +331,7 @@ class SearchUserAPIView(APIView):
                     Q(first_name__icontains=term) | Q(last_name__icontains=term)
                 )
             users = users.filter(
-                Q(username__icontains=search) | name_query
+                Q(email__icontains=search) | Q(username__icontains=search) | name_query
             )[:20]
             
         serializer = AuthorMiniSerializer(users, many=True)

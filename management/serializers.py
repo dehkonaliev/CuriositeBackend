@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from authentication.models import CustomUser
 from profiles.models import InstructorProfile, StudentProfile
-from courses.models import Course, Module, Lesson
+from courses.models import Course, Module, Lesson, Tag, Category
 from enrollments.models import Enrollment
+from certificates.models import Certificate
 from payments.models import StudentWallet, WalletTransaction
 from notifications.models import Notification
+from posts.models import Post
 from baseapp.utils import field_error
 from baseapp.emails import send_notification
 from django.db.models import Q
@@ -387,6 +389,118 @@ class AdminEnrollmentSerializer(serializers.ModelSerializer):
             'id', 'student_email', 'student_name', 'course_title',
             'status', 'has_access', 'is_bought', 'progress_percentage',
             'enrolled_at', 'completed_at',
+        ]
+
+    def get_student_name(self, obj):
+        return f"{obj.student.first_name} {obj.student.last_name}".strip()
+
+
+# ──────────────────────────────────────────────
+#  TAG & CATEGORY (admin CRUD)
+# ──────────────────────────────────────────────
+
+class AdminTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ['id', 'name', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def validate_name(self, value):
+        value = value.strip()
+        if len(value) < 5:
+            raise serializers.ValidationError("Name must be at least 5 characters long.")
+        if len(value) > 50:
+            raise serializers.ValidationError("Name cannot exceed 50 characters.")
+        return value
+
+
+class AdminCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'slug', 'icon', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'slug', 'created_at', 'updated_at']
+
+    def validate_name(self, value):
+        value = value.strip()
+        if len(value) < 5:
+            raise serializers.ValidationError("Name must be at least 5 characters long.")
+        if len(value) > 100:
+            raise serializers.ValidationError("Name cannot exceed 100 characters.")
+        return value
+
+
+# ──────────────────────────────────────────────
+#  POST MONITORING (admin)
+# ──────────────────────────────────────────────
+
+class AdminPostListSerializer(serializers.ModelSerializer):
+    instructor_name = serializers.SerializerMethodField()
+    reading_time_minutes = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Post
+        fields = [
+            'id', 'title', 'slug', 'excerpt', 'status', 'instructor_name',
+            'views_count', 'likes_count', 'comments_count',
+            'reading_time_minutes', 'published_at', 'created_at',
+        ]
+
+    def get_instructor_name(self, obj):
+        return f"{obj.instructor.first_name} {obj.instructor.last_name}".strip()
+
+
+# ──────────────────────────────────────────────
+#  ENHANCED INSTRUCTOR DETAIL (admin)
+# ──────────────────────────────────────────────
+
+class AdminInstructorCourseSerializer(serializers.ModelSerializer):
+    category_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Course
+        fields = [
+            'id', 'title', 'slug', 'status', 'pricing_type', 'price',
+            'level', 'total_enrollments', 'average_rating',
+            'category_name', 'created_at',
+        ]
+
+    def get_category_name(self, obj):
+        return obj.category.name if obj.category else None
+
+
+class AdminInstructorPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = [
+            'id', 'title', 'slug', 'excerpt', 'status',
+            'views_count', 'likes_count', 'comments_count', 'created_at',
+        ]
+
+
+class AdminInstructorEnrollmentSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    course_title = serializers.CharField(source='course.title', read_only=True)
+
+    class Meta:
+        model = Enrollment
+        fields = [
+            'id', 'student_name', 'course_title', 'status',
+            'progress_percentage', 'enrolled_at', 'completed_at',
+        ]
+
+    def get_student_name(self, obj):
+        return f"{obj.student.first_name} {obj.student.last_name}".strip()
+
+
+class AdminInstructorCertificateSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    course_title = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Certificate
+        fields = [
+            'id', 'student_name', 'course_title', 'total_score',
+            'assignment_score', 'created_at',
         ]
 
     def get_student_name(self, obj):

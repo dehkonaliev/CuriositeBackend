@@ -374,7 +374,32 @@ class CategoryAPIView(APIView):
         
         return success_response(message="Category list", data=serializer.data)
     
-  
+
+class CategoryDetailAPIView(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def patch(self, request, pk):
+        try:
+            category = Category.objects.get(pk=pk)
+        except Category.DoesNotExist:
+            return error_response("Category not found.", status_code=404)
+
+        serializer = CategoryGetCreateSerializer(category, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return success_response(message="Category updated", data=serializer.data)
+
+    def delete(self, request, pk):
+        try:
+            category = Category.objects.get(pk=pk)
+        except Category.DoesNotExist:
+            return error_response("Category not found.", status_code=404)
+
+        category.delete()
+        return success_response(message="Category deleted")
+    
+    
 class TagAPIView(APIView):
     permission_classes = [IsAdminOrReadOnly]
     def post(self, request):
@@ -389,6 +414,31 @@ class TagAPIView(APIView):
         serializer = TagSerializer(tags, many=True)
         
         return success_response(message="Tag list", data=serializer.data)
+
+
+class TagDetailAPIView(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def patch(self, request, pk):
+        try:
+            tag = Tag.objects.get(pk=pk)
+        except Tag.DoesNotExist:
+            return error_response("Tag not found.", status_code=404)
+
+        serializer = TagSerializer(tag, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return success_response(message="Tag updated", data=serializer.data)
+
+    def delete(self, request, pk):
+        try:
+            tag = Tag.objects.get(pk=pk)
+        except Tag.DoesNotExist:
+            return error_response("Tag not found.", status_code=404)
+
+        tag.delete()
+        return success_response(message="Tag deleted")
 
 
 class InstructorsAPIView(APIView):
