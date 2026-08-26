@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (CourseCreateAPIView, CategoryAPIView, TagAPIView, CourseUpDelAPIView, ModuleCreateAPIView, ModuleUpdateDeleteAPIView,
     LessonCreateAPIView, LessonUpDelAPIView, CourseDetailAPIView, ModuleDetailAPIView, LessonDetailAPIView, FilteredCoursesAPIView,
-    FilteredCoursesInstructorAPIView, GetMyFeedAPIView, InstructorsAPIView, SendToReview, CompleteCourseAPIView
+    FilteredCoursesInstructorAPIView, GetMyFeedAPIView, InstructorsAPIView, SendToReview, CompleteCourseAPIView, LessonCurriculumAPIView
 )
 
 
@@ -32,6 +32,7 @@ urlpatterns = [
     path('lesson-create', LessonCreateAPIView.as_view()),
     path('lesson-update-delete/<uuid:pk>', LessonUpDelAPIView.as_view()),
     path('lesson-detail/<uuid:pk>', LessonDetailAPIView.as_view()),
+    path('lesson-curriculum/<uuid:pk>', LessonCurriculumAPIView.as_view()),
 ]
 
 def starts():

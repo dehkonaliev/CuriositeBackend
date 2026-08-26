@@ -278,11 +278,12 @@ class CourseMinimalSerializer(serializers.ModelSerializer):
 
 class LessonSerializer(serializers.ModelSerializer):
     quiz = serializers.SerializerMethodField()
+    is_locked = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
         fields = [
-            'id', 'title', 'lesson_type', 'duration_minutes', 'order', 'is_preview', 'quiz',
+            'id', 'title', 'lesson_type', 'duration_minutes', 'is_locked', 'order', 'is_preview', 'quiz',
         ]
 
     def get_quiz(self, obj):
@@ -290,6 +291,11 @@ class LessonSerializer(serializers.ModelSerializer):
         if quiz:
             return {'id': str(quiz.pk), 'title': quiz.title}
         return None
+    
+    def get_is_locked(self, obj):
+        user = self.context.get('request').user
+        enrollment = user.enrollments.filter(course=obj.module.course).first()
+        return not enrollment or not enrollment.lessons_progress.filter(lesson=obj).exists()
 
 
 class ModuleDetailSerializer(serializers.ModelSerializer):
@@ -360,18 +366,14 @@ class LessonCurriculumSerializer(serializers.ModelSerializer):
 
 class LessonDetailSerializer(serializers.ModelSerializer):
     module = ModuleMinimalSerializer(read_only=True)
-    curriculum = serializers.SerializerMethodField()
     progress_id = serializers.SerializerMethodField()
     progress_completed = serializers.SerializerMethodField()
     quiz = serializers.SerializerMethodField()
     is_locked = serializers.SerializerMethodField()
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'lesson_type', 'is_locked', 'video_url', 'content', 'duration_minutes', 'order', 'is_preview', 'module', 'curriculum', 'progress_id', 'progress_completed', 'quiz']
+        fields = ['id', 'title', 'lesson_type', 'is_locked', 'video_url', 'content', 'duration_minutes', 'order', 'is_preview', 'module', 'progress_id', 'progress_completed', 'quiz']
         read_only_fields = fields
-        
-    def get_curriculum(self, obj):
-        return LessonCurriculumSerializer(obj.module.course).data
 
     def _get_progress(self, obj):
         user = self.context.get('request').user

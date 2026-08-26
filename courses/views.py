@@ -14,7 +14,7 @@ from baseapp.utils import success_response, error_response
 from baseapp.pagination import CoursePagination
 from .serializers import (CourseCreateUpdateSerializer, CategoryGetCreateSerializer, TagSerializer,
     ModuleCreateUpdateSerializer, LessonCreateUpdateSerializer, CourseDetailSerializer, ModuleDetailSerializer,
-    LessonDetailSerializer, CourseInfoSerializer
+    LessonDetailSerializer, CourseInfoSerializer, LessonCurriculumSerializer
 )
 from baseapp.permissions import (IsInstructorOrAdmin, IsAdminOrReadOnly, IsInstructorAndOwner,
     IsAdminOrOwnerOrReadOnlyPublished, IsStudentAndOwner
@@ -170,7 +170,32 @@ class LessonUpDelAPIView(APIView):
         lesson.delete()
         
         return success_response(message="Lesson deleted")
-       
+
+
+class LessonCurriculumAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminOrOwnerOrReadOnlyPublished]
+    def get(self, request, pk):
+        user = request.user
+        lesson = Lesson.objects.filter(pk=pk).select_related('module__course').first()
+        if not lesson:
+            return error_response(message="Lesson not found", status_code=404)
+        
+        is_owner = request.user.is_authenticated and request.user == lesson.module.course.instructor
+        if lesson.module.course.status != Course.Status.PUBLISHED and not is_owner:
+            return error_response(message="Lesson not found", status_code=404)
+        
+        self.check_object_permissions(request, lesson.module.course)
+        enrollment = user.enrollments.filter(course=lesson.module.course, has_access=True).first()
+        if user.user_role == "STUDENT" and not enrollment and not lesson.is_preview:
+            return error_response(message="You have no active enrollment for this courses")
+        
+        if enrollment:
+            enrollment.last_accessed_lesson = lesson
+            enrollment.last_accessed_at = timezone.now()
+            enrollment.save(update_fields=['last_accessed_lesson', 'last_accessed_at'])
+        
+        serializer = LessonCurriculumSerializer(lesson.module.course, context={'request': request})
+        return success_response(message="Lesson detail", data=serializer.data)    
        
 class LessonDetailAPIView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrOwnerOrReadOnlyPublished]

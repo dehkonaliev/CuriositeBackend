@@ -18,7 +18,9 @@ class EnrollmentCreateAPIView(APIView):
     def post(self, request):
         serializer = EnrollmentCreateSerializer(data=request.data, context={'request':request})
         serializer.is_valid(raise_exception=True)
-        if not request.user.subscriptions.filter(expires_at__gte=timezone.now()).exists():
+        
+        course = serializer.validated_data['course']
+        if not request.user.subscriptions.filter(expires_at__gte=timezone.now()).exists() or not course.pricing_type == "FREE":
             return error_response(
                 message="You have no valid subscription",
                 errors={"code": "NO_ACTIVE_SUBSCRIPTION"},
