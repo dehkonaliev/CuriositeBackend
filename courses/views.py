@@ -195,7 +195,7 @@ class LessonCurriculumAPIView(APIView):
             enrollment.save(update_fields=['last_accessed_lesson', 'last_accessed_at'])
         
         serializer = LessonCurriculumSerializer(lesson.module.course, context={'request': request})
-        return success_response(message="Lesson detail", data=serializer.data)    
+        return success_response(message="Lesson curriculum", data=serializer.data)    
        
 class LessonDetailAPIView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrOwnerOrReadOnlyPublished]
