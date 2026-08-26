@@ -365,14 +365,22 @@ class LessonCurriculumSerializer(serializers.ModelSerializer):
         model = Course
         fields = ['id', 'title', 'slug', 'modules']
 
+class LessonDetailModuleSerializer(serializers.ModelSerializer):
+    course = serializers.CharField(source='course.id')
+    class Meta:
+        model = Module
+        fields = ['id', 'title', 'order', 'course']
+
+
 class LessonDetailSerializer(serializers.ModelSerializer):
+    module = LessonDetailModuleSerializer(read_only=True)
     progress_id = serializers.SerializerMethodField()
     progress_completed = serializers.SerializerMethodField()
     quiz = serializers.SerializerMethodField()
     is_locked = serializers.SerializerMethodField()
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'lesson_type', 'is_locked', 'video_url', 'content', 'duration_minutes', 'order', 'is_preview', 'progress_id', 'progress_completed', 'quiz']
+        fields = ['id', 'title', 'lesson_type', 'is_locked', 'video_url', 'content', 'duration_minutes', 'order', 'is_preview', 'module', 'progress_id', 'progress_completed', 'quiz']
         read_only_fields = fields
 
     def _get_progress(self, obj):
