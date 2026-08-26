@@ -295,8 +295,10 @@ class LessonSerializer(serializers.ModelSerializer):
     
     def get_is_locked(self, obj):
         user = self.context.get('request').user
-        enrollment = user.enrollments.filter(course=obj.module.course).first()
-        return not enrollment or not enrollment.lessons_progress.filter(lesson=obj).exists()
+        if user.is_authenticated:
+            enrollment = user.enrollments.filter(course=obj.module.course).first()
+            return not enrollment or not enrollment.lessons_progress.filter(lesson=obj).exists()
+        return True
 
 
 class ModuleDetailSerializer(serializers.ModelSerializer):
