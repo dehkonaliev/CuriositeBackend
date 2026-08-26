@@ -8,6 +8,16 @@ import sys
 
 def resize_image(image_field, max_width=800, max_height=800, quality=85):
     img = Image.open(image_field)
+
+    # JPEG has no alpha channel — flatten any transparency onto white first
+    if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+        img = img.convert('RGBA')
+        background = Image.new('RGB', img.size, (255, 255, 255))
+        background.paste(img, mask=img.split()[-1])  # alpha channel as mask
+        img = background
+    elif img.mode != 'RGB':
+        img = img.convert('RGB')
+
     img.thumbnail((max_width, max_height), Image.LANCZOS)
 
     buffer = BytesIO()
@@ -16,7 +26,7 @@ def resize_image(image_field, max_width=800, max_height=800, quality=85):
 
     return InMemoryUploadedFile(
         buffer, 'ImageField', image_field.name,
-        'image/jpeg', sys.getsizeof(buffer), None
+        'image/jpeg', buffer.getbuffer().nbytes, None
     )
 
 class Category(BaseModel):
